@@ -12,7 +12,7 @@ The app is designed to be:
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import auth, users
+from .routers import auth, users, group_events
 
 # Initialize FastAPI app with metadata
 app = FastAPI(
@@ -28,18 +28,34 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",  # React development server
+        "http://localhost:3000",  # React development server (browser access)
         "http://127.0.0.1:3000",  # Alternative localhost
+        "http://localhost:3001",  # Alternative React port
+        "http://127.0.0.1:3001",  # Alternative localhost port
+        "http://frontend:3000",   # Frontend container (Docker network)
         # Add your production frontend URL here
     ],
     allow_credentials=True,  # Allow cookies and auth headers
-    allow_methods=["*"],     # Allow all HTTP methods
-    allow_headers=["*"],     # Allow all headers
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],  # Explicit methods
+    allow_headers=[
+        "Accept",
+        "Accept-Language",
+        "Content-Language",
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "Origin",
+        "Access-Control-Request-Method",
+        "Access-Control-Request-Headers",
+    ],
+    expose_headers=["*"],
+    max_age=86400,  # Cache preflight requests for 24 hours
 )
 
 # Register API routers
 app.include_router(auth.router)    # Authentication endpoints (/auth/*)
 app.include_router(users.router)   # User profile endpoints (/users/*)
+app.include_router(group_events.router)  # Group events endpoints (/group_events/*)
 
 # API Endpoints
 @app.get("/", tags=["Root"])
@@ -100,4 +116,18 @@ async def debug_env():
         "cognito_client_id": settings.COGNITO_CLIENT_ID[:10] + "..." if settings.COGNITO_CLIENT_ID else "Not set",
         "database_url": settings.DATABASE_URL.split("@")[0] + "@***" if "@" in settings.DATABASE_URL else settings.DATABASE_URL,
         "debug": settings.DEBUG
-    } 
+    }
+
+@app.options("/debug/cors", tags=["Debug"])
+async def debug_cors():
+    """
+    Debug endpoint to test CORS preflight requests
+    """
+    return {"message": "CORS preflight successful"}
+
+@app.get("/debug/cors", tags=["Debug"])
+async def debug_cors_get():
+    """
+    Debug endpoint to test CORS GET requests
+    """
+    return {"message": "CORS GET request successful"} 

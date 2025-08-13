@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { apiService, UserProfile, UserPreferences } from '../../services/api';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 
 interface OnboardingFormProps {
   onComplete: () => void;
 }
 
 export const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) => {
-  const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -14,34 +14,55 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) =>
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [locationName, setLocationName] = useState('');
+  const [locationLat, setLocationLat] = useState<number | null>(null);
+  const [locationLng, setLocationLng] = useState<number | null>(null);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
 
   // Preferences data
-  const [sports, setSports] = useState<string[]>([]);
   const [preferredPace, setPreferredPace] = useState('');
-  const [rideType, setRideType] = useState('');
-  const [distanceMin, setDistanceMin] = useState('');
-  const [distanceMax, setDistanceMax] = useState('');
-  const [availability, setAvailability] = useState<string[]>([]);
 
-  const sportsOptions = ['running', 'cycling'];
   const paceOptions = ['casual', 'moderate', 'fast'];
-  const rideTypeOptions = ['casual', 'drop_ride', 'competitive'];
-  const dayOptions = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
-  const handleSportToggle = (sport: string) => {
-    setSports(prev => 
-      prev.includes(sport) 
-        ? prev.filter(s => s !== sport)
-        : [...prev, sport]
-    );
-  };
-
-  const handleDayToggle = (day: string) => {
-    setAvailability(prev => 
-      prev.includes(day) 
-        ? prev.filter(d => d !== day)
-        : [...prev, day]
-    );
+  const getCurrentLocation = () => {
+    setIsGettingLocation(true);
+    
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocationLat(position.coords.latitude);
+          setLocationLng(position.coords.longitude);
+          
+          // Try to get location name using reverse geocoding
+          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}&zoom=10`)
+            .then(response => response.json())
+            .then(data => {
+              if (data.display_name) {
+                setLocationName(data.display_name.split(',')[0] + ', ' + data.display_name.split(',')[1]);
+              }
+            })
+            .catch(() => {
+              // If reverse geocoding fails, just use coordinates
+              setLocationName(`${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`);
+            })
+            .finally(() => {
+              setIsGettingLocation(false);
+            });
+        },
+        (error) => {
+          console.log('Geolocation error:', error);
+          setIsGettingLocation(false);
+          setError('Could not get your location. You can enter it manually.');
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000 // 5 minutes
+        }
+      );
+    } else {
+      setIsGettingLocation(false);
+      setError('Geolocation is not supported by your browser. Please enter your location manually.');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,15 +79,12 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) =>
         name: name || undefined,
         bio: bio || undefined,
         location_name: locationName || undefined,
+        location_lat: locationLat || undefined,
+        location_lng: locationLng || undefined,
       };
 
       const preferencesData: Partial<UserPreferences> = {
-        sports: sports.length > 0 ? sports : undefined,
         preferred_pace: preferredPace || undefined,
-        ride_type: rideType || undefined,
-        distance_range_min: distanceMin ? parseInt(distanceMin) : undefined,
-        distance_range_max: distanceMax ? parseInt(distanceMax) : undefined,
-        availability: availability.length > 0 ? availability : undefined,
       };
 
       await apiService.completeOnboarding(profileData, preferencesData);
@@ -78,162 +96,90 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) =>
     }
   };
 
-  const nextStep = () => setStep(step + 1);
-  const prevStep = () => setStep(step - 1);
-
-  const renderStep1 = () => (
-    <div>
-      <h3>Basic Information</h3>
-      <div className="form-group">
-        <label htmlFor="name">Name</label>
-        <input
-          type="text"
-          id="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Your name"
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="bio">Bio</label>
-        <textarea
-          id="bio"
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          placeholder="Tell us about yourself..."
-          rows={3}
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="location">Location</label>
-        <input
-          type="text"
-          id="location"
-          value={locationName}
-          onChange={(e) => setLocationName(e.target.value)}
-          placeholder="City, State/Province"
-        />
-      </div>
-
-      <button type="button" className="btn btn-primary" onClick={nextStep}>
-        Next
-      </button>
-    </div>
-  );
-
-  const renderStep2 = () => (
-    <div>
-      <h3>Sports & Preferences</h3>
+  return (
+    <div className="card">
+      <h2 className="text-center mb-20">Complete Your Profile</h2>
       
-      <div className="form-group">
-        <label>Sports</label>
-        <div>
-          {sportsOptions.map(sport => (
-            <label key={sport} style={{ display: 'block', marginBottom: '10px' }}>
-              <input
-                type="checkbox"
-                checked={sports.includes(sport)}
-                onChange={() => handleSportToggle(sport)}
-                style={{ marginRight: '8px' }}
-              />
-              {sport.charAt(0).toUpperCase() + sport.slice(1)}
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="pace">Preferred Pace</label>
-        <select
-          id="pace"
-          value={preferredPace}
-          onChange={(e) => setPreferredPace(e.target.value)}
-        >
-          <option value="">Select pace</option>
-          {paceOptions.map(pace => (
-            <option key={pace} value={pace}>
-              {pace.charAt(0).toUpperCase() + pace.slice(1)}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="rideType">Ride Type</label>
-        <select
-          id="rideType"
-          value={rideType}
-          onChange={(e) => setRideType(e.target.value)}
-        >
-          <option value="">Select ride type</option>
-          {rideTypeOptions.map(type => (
-            <option key={type} value={type}>
-              {type.replace('_', ' ').charAt(0).toUpperCase() + type.replace('_', ' ').slice(1)}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="distanceMin">Distance Range (km)</label>
-        <div style={{ display: 'flex', gap: '10px' }}>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="name">Name</label>
           <input
-            type="number"
-            placeholder="Min"
-            value={distanceMin}
-            onChange={(e) => setDistanceMin(e.target.value)}
-            min="1"
-            style={{ flex: 1 }}
-          />
-          <input
-            type="number"
-            placeholder="Max"
-            value={distanceMax}
-            onChange={(e) => setDistanceMax(e.target.value)}
-            min="1"
-            style={{ flex: 1 }}
+            type="text"
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Your name"
           />
         </div>
-      </div>
 
-      <div style={{ display: 'flex', gap: '10px' }}>
-        <button type="button" className="btn btn-secondary" onClick={prevStep}>
-          Back
-        </button>
-        <button type="button" className="btn btn-primary" onClick={nextStep}>
-          Next
-        </button>
-      </div>
-    </div>
-  );
-
-  const renderStep3 = () => (
-    <div>
-      <h3>Availability</h3>
-      
-      <div className="form-group">
-        <label>Available Days</label>
-        <div>
-          {dayOptions.map(day => (
-            <label key={day} style={{ display: 'block', marginBottom: '10px' }}>
-              <input
-                type="checkbox"
-                checked={availability.includes(day)}
-                onChange={() => handleDayToggle(day)}
-                style={{ marginRight: '8px' }}
-              />
-              {day.charAt(0).toUpperCase() + day.slice(1)}
-            </label>
-          ))}
+        <div className="form-group">
+          <label htmlFor="bio">Bio</label>
+          <textarea
+            id="bio"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Tell us about yourself..."
+            rows={3}
+          />
         </div>
-      </div>
 
-      <div style={{ display: 'flex', gap: '10px' }}>
-        <button type="button" className="btn btn-secondary" onClick={prevStep}>
-          Back
-        </button>
+        <div className="form-group">
+          <label htmlFor="location">Location</label>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+            <div style={{ flex: 1 }}>
+              <input
+                type="text"
+                id="location"
+                value={locationName}
+                onChange={(e) => setLocationName(e.target.value)}
+                placeholder="Your city or use current location"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={getCurrentLocation}
+              disabled={isGettingLocation}
+              className="btn btn-secondary"
+              style={{ 
+                whiteSpace: 'nowrap',
+                padding: '12px 16px',
+                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              {isGettingLocation ? 'Getting...' : (
+                <>
+                  <LocationOnIcon style={{ fontSize: 16 }} />
+                  Use Current
+                </>
+              )}
+            </button>
+          </div>
+          {locationLat && locationLng && (
+            <small style={{ color: 'var(--accent-medium)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+              Location saved: {locationLat.toFixed(4)}, {locationLng.toFixed(4)}
+            </small>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="pace">Preferred Pace</label>
+          <select
+            id="pace"
+            value={preferredPace}
+            onChange={(e) => setPreferredPace(e.target.value)}
+          >
+            <option value="">Select pace</option>
+            {paceOptions.map(pace => (
+              <option key={pace} value={pace}>
+                {pace.charAt(0).toUpperCase() + pace.slice(1)}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <button
           type="submit"
           className="btn btn-primary"
@@ -241,42 +187,6 @@ export const OnboardingForm: React.FC<OnboardingFormProps> = ({ onComplete }) =>
         >
           {isLoading ? 'Completing...' : 'Complete Setup'}
         </button>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="card">
-      <h2 className="text-center mb-20">Complete Your Profile</h2>
-      
-      <div className="mb-20">
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-          {[1, 2, 3].map(stepNumber => (
-            <div
-              key={stepNumber}
-              style={{
-                width: '30px',
-                height: '30px',
-                borderRadius: '50%',
-                backgroundColor: step >= stepNumber ? '#007bff' : '#ddd',
-                color: 'white',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 10px',
-                fontWeight: 'bold'
-              }}
-            >
-              {stepNumber}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit}>
-        {step === 1 && renderStep1()}
-        {step === 2 && renderStep2()}
-        {step === 3 && renderStep3()}
 
         {error && <div className="error mt-20">{error}</div>}
       </form>

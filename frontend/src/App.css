@@ -1,10 +1,308 @@
+/* CSS Variables for the new color palette */
+:root {
+  --alice-blue: #e8f1f2;
+  --celadon: #b3efb2;
+  --cambridge-blue: #7a9e7e;
+  --brunswick-green: #31493c;
+  --rich-black: #001a23;
+  
+  /* Additional derived colors */
+  --light-bg: var(--alice-blue);
+  --accent-light: var(--celadon);
+  --accent-medium: var(--cambridge-blue);
+  --accent-dark: var(--brunswick-green);
+  --text-dark: var(--rich-black);
+  --text-light: var(--alice-blue);
+  --border-color: var(--cambridge-blue);
+}
+
 /* App-specific styles */
 .App {
   text-align: center;
+  background-color: var(--light-bg);
+  min-height: 100vh;
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: var(--rich-black);
   padding: 20px;
-  color: white;
+  color: var(--text-light);
+}
+
+/* Container styles */
+.container {
+  min-height: 100vh;
+  background-color: var(--light-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.form-container {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Map view styles */
+.map-container {
+  height: calc(100vh - 120px);
+  width: 100%;
+  position: relative;
+  background-color: var(--light-bg);
+}
+
+/* Tab bar styles */
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--rich-black);
+  border-top: 1px solid var(--accent-medium);
+  display: flex;
+  height: 60px;
+  z-index: 1000;
+}
+
+.tab-button {
+  flex: 1;
+  border: none;
+  background-color: transparent;
+  padding: 10px;
+  cursor: pointer;
+  color: var(--accent-medium);
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.tab-button.active {
+  color: var(--celadon);
+  background-color: rgba(179, 239, 178, 0.1);
+}
+
+.tab-button:hover {
+  color: var(--celadon);
+  background-color: rgba(179, 239, 178, 0.05);
+}
+
+.tab-button .icon {
+  font-size: 18px !important;
+  font-weight: normal;
+  color: var(--accent-medium);
+  transition: color 0.2s ease;
+}
+
+.tab-button.active .icon {
+  color: var(--celadon);
+}
+
+.tab-button:hover .icon {
+  color: var(--celadon);
+}
+
+/* Floating action button */
+.fab {
+  position: absolute;
+  bottom: 80px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--accent-medium);
+  color: var(--text-light);
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 26, 35, 0.3);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.fab:hover {
+  transform: scale(1.1);
+  background-color: var(--accent-dark);
+  box-shadow: 0 6px 16px rgba(0, 26, 35, 0.4);
+}
+
+/* Content area */
+.content-area {
+  height: calc(100vh - 120px);
+  overflow: hidden;
+  background-color: var(--light-bg);
+}
+
+/* Header */
+.app-header {
+  background-color: var(--rich-black);
+  color: var(--text-light);
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--accent-medium);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--celadon);
+}
+
+.header-signout {
+  background-color: transparent;
+  border: 1px solid var(--accent-medium);
+  color: var(--text-light);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.header-signout:hover {
+  background-color: var(--accent-medium);
+  color: var(--rich-black);
+  border-color: var(--accent-medium);
+}
+
+/* Form styles */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 16px;
+  background-color: white;
+  color: var(--text-dark);
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--accent-medium);
+  box-shadow: 0 0 0 3px rgba(122, 158, 126, 0.1);
+}
+
+/* Button styles */
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-primary {
+  background-color: var(--accent-medium);
+  color: var(--text-light);
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 26, 35, 0.2);
+}
+
+.btn-secondary {
+  background-color: var(--accent-light);
+  color: var(--text-dark);
+  border: 1px solid var(--accent-medium);
+}
+
+.btn-secondary:hover {
+  background-color: var(--accent-medium);
+  color: var(--text-light);
+  transform: translateY(-1px);
+}
+
+.btn-block {
+  width: 100%;
+  display: block;
+}
+
+/* Card styles */
+.card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 26, 35, 0.1);
+  border: 1px solid var(--border-color);
+}
+
+.card h2, .card h3 {
+  color: var(--text-dark);
+  margin-top: 0;
+}
+
+/* Error styles */
+.error {
+  color: #d32f2f;
+  background-color: #ffebee;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #ffcdd2;
+  margin-top: 16px;
+}
+
+/* Utility classes */
+.mt-20 {
+  margin-top: 20px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Loading state */
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--accent-medium);
+}
+
+.loading-container .icon {
+  font-size: 24px;
+  margin-bottom: 10px;
 }

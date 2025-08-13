@@ -17,6 +17,7 @@ import { LoginForm } from './components/auth/LoginForm';
 import { SignUpForm } from './components/auth/SignUpForm';
 import { ConfirmEmailForm } from './components/auth/ConfirmEmailForm';
 import { OnboardingForm } from './components/onboarding/OnboardingForm';
+import { MapView } from './components/map/MapView';
 import { apiService } from './services/api';
 import './App.css';
 
@@ -165,34 +166,12 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // Main app (user is authenticated and has profile)
+  // Main app (user is authenticated and has profile) - Show MapView
   return (
-    <div className="container">
-      <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h1>Group Fitness App</h1>
-          <button className="btn btn-secondary" onClick={handleSignOut}>
-            Sign Out
-          </button>
-        </div>
-        
-        <div className="card">
-          <h2>Welcome, {user?.name || user?.email}!</h2>
-          <p>Your profile is set up and ready to go.</p>
-          <p>This is where the main app features will be implemented.</p>
-        </div>
-
-        <div className="card">
-          <h3>Coming Soon:</h3>
-          <ul>
-            <li>Browse and create events</li>
-            <li>Find group rides and runs</li>
-            <li>Chat with event participants</li>
-            <li>Track your activities</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+    <MapView 
+      onSignOut={handleSignOut}
+      userName={user?.name || user?.email}
+    />
   );
 };
 

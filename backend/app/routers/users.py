@@ -4,7 +4,8 @@ from typing import Optional
 from ..database import get_db
 from ..schemas.user import (
     UserProfileResponse, UserProfileUpdate, UserPreferencesResponse, 
-    UserPreferencesUpdate, UserProfileWithPreferences, OnboardingRequest
+    UserPreferencesUpdate, UserProfileWithPreferences, OnboardingRequest,
+    UserProfileSimpleResponse, UserPreferencesSimpleResponse, UserProfileWithPreferencesSimple
 )
 from ..schemas.auth import UserInfo
 from ..services.user_service import UserService
@@ -15,7 +16,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 def get_user_service(db: Session = Depends(get_db)) -> UserService:
     return UserService(db)
 
-@router.get("/profile", response_model=UserProfileResponse)
+@router.get("/profile", response_model=UserProfileSimpleResponse)
 async def get_user_profile(
     current_user: UserInfo = Depends(get_current_user),
     user_service: UserService = Depends(get_user_service)
@@ -29,7 +30,7 @@ async def get_user_profile(
         )
     return profile
 
-@router.put("/profile", response_model=UserProfileResponse)
+@router.put("/profile", response_model=UserProfileSimpleResponse)
 async def update_user_profile(
     profile_update: UserProfileUpdate,
     current_user: UserInfo = Depends(get_current_user),
@@ -44,7 +45,7 @@ async def update_user_profile(
         )
     return profile
 
-@router.get("/preferences", response_model=UserPreferencesResponse)
+@router.get("/preferences", response_model=UserPreferencesSimpleResponse)
 async def get_user_preferences(
     current_user: UserInfo = Depends(get_current_user),
     user_service: UserService = Depends(get_user_service)
@@ -58,7 +59,7 @@ async def get_user_preferences(
         )
     return preferences
 
-@router.put("/preferences", response_model=UserPreferencesResponse)
+@router.put("/preferences", response_model=UserPreferencesSimpleResponse)
 async def update_user_preferences(
     preferences_update: UserPreferencesUpdate,
     current_user: UserInfo = Depends(get_current_user),
@@ -73,7 +74,7 @@ async def update_user_preferences(
         )
     return preferences
 
-@router.get("/me", response_model=UserProfileWithPreferences)
+@router.get("/me", response_model=UserProfileWithPreferencesSimple)
 async def get_user_with_preferences(
     current_user: UserInfo = Depends(get_current_user),
     user_service: UserService = Depends(get_user_service)

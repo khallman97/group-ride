@@ -20,6 +20,9 @@ class UserProfile(Base):
     
     # Relationship to preferences
     preferences = relationship("UserPreferences", back_populates="profile", uselist=False)
+    
+    # Relationship to group events
+    group_events = relationship("GroupEvent", back_populates="creator")
 
 class UserPreferences(Base):
     __tablename__ = "user_preferences"

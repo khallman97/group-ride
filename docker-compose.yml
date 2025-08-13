@@ -6,6 +6,9 @@
 # - MinIO for S3-compatible file storage
 # - FastAPI backend
 # - React Native Web frontend
+#
+# Note: Frontend uses REACT_APP_API_URL=http://localhost:8000 for browser-to-backend communication
+# The browser runs outside Docker and needs to access the backend via localhost
 
 services:
   # PostgreSQL Database

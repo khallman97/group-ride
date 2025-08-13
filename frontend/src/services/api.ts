@@ -42,12 +42,7 @@ export interface UserProfile {
 export interface UserPreferences {
   id: number;
   user_id: string;
-  sports: string[];
   preferred_pace?: string;
-  ride_type?: string;
-  distance_range_min?: number;
-  distance_range_max?: number;
-  availability: string[];
   created_at: string;
   updated_at: string;
 }

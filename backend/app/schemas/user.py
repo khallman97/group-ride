@@ -92,7 +92,7 @@ class UserProfileUpdate(UserProfileBase):
 class UserPreferencesUpdate(UserPreferencesBase):
     pass
 
-# Response schemas
+# Response schemas (original - for internal use)
 class UserProfileResponse(UserProfileBase):
     id: int
     user_id: str
@@ -112,10 +112,40 @@ class UserPreferencesResponse(UserPreferencesBase):
     class Config:
         from_attributes = True
 
+# Simplified response schemas (for frontend - excludes unused fields)
+class UserProfileSimpleResponse(BaseModel):
+    id: int
+    user_id: str
+    email: str
+    name: Optional[str] = None
+    bio: Optional[str] = None
+    location_lat: Optional[Decimal] = None
+    location_lng: Optional[Decimal] = None
+    location_name: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class UserPreferencesSimpleResponse(BaseModel):
+    id: int
+    user_id: str
+    preferred_pace: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
 # Combined schemas
 class UserProfileWithPreferences(BaseModel):
     profile: UserProfileResponse
     preferences: Optional[UserPreferencesResponse] = None
+
+class UserProfileWithPreferencesSimple(BaseModel):
+    profile: UserProfileSimpleResponse
+    preferences: Optional[UserPreferencesSimpleResponse] = None
 
 class OnboardingRequest(BaseModel):
     profile: UserProfileUpdate
